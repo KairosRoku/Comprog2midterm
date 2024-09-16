@@ -8,14 +8,12 @@ public class DetectionRadiusTrigger : MonoBehaviour
 
     void Start()
     {
-        // Get reference to the PlayerController script on the parent GameObject
         playerController = GetComponentInParent<PlayerController>();
         Debug.Log("DetectionRadiusTrigger initialized. Trigger is active on GameObject: " + gameObject.name);
     }
 
     void Update()
     {
-        // Call the shooting function periodically if there are enemies in range
         if (enemiesInRange.Count > 0)
         {
             playerController.ShootBullet();
@@ -24,27 +22,27 @@ public class DetectionRadiusTrigger : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Object entered trigger: " + collision.gameObject.name); // Log any object entering
+        Debug.Log("Object entered trigger: " + collision.gameObject.name); 
 
         if (collision.CompareTag("Enemy"))
         {
             enemiesInRange.Add(collision.gameObject);
-            Debug.Log("Enemy entered detection radius: " + collision.gameObject.name); // Log when an enemy enters
+            Debug.Log("Enemy entered detection radius: " + collision.gameObject.name); 
         }
         else
         {
-            Debug.Log("Non-enemy object entered: " + collision.gameObject.name); // Log non-enemy objects
+            Debug.Log("Non-enemy object entered: " + collision.gameObject.name);
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        Debug.Log("Object exited trigger: " + collision.gameObject.name); // Log any object exiting
+        Debug.Log("Object exited trigger: " + collision.gameObject.name);
 
         if (collision.CompareTag("Enemy"))
         {
             enemiesInRange.Remove(collision.gameObject);
-            Debug.Log("Enemy exited detection radius: " + collision.gameObject.name); // Log when an enemy exits
+            Debug.Log("Enemy exited detection radius: " + collision.gameObject.name);
         }
     }
 }

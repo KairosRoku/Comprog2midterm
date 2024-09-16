@@ -6,14 +6,13 @@ public class Bullet : MonoBehaviour
     {
         if (collision.CompareTag("Enemy"))
         {
-            // Check if the bullet color matches the enemy color
             if (collision.GetComponent<SpriteRenderer>().color == GetComponent<SpriteRenderer>().color)
             {
-                Destroy(collision.gameObject); // Destroy the enemy if the colors match
-                FindObjectOfType<PlayerController>().IncrementEnemiesDestroyed(); // Increment enemy count
+                Destroy(collision.gameObject); 
+                FindObjectOfType<PlayerController>().IncrementEnemiesDestroyed();
             }
 
-            Destroy(gameObject); // Destroy the bullet on impact
+            Destroy(gameObject); 
         }
     }
 }

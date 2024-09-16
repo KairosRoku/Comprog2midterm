@@ -1,6 +1,6 @@
 using UnityEngine;
+using TMPro;
 using System.Collections.Generic;
-using TMPro; // Import TextMeshPro namespace
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,40 +8,41 @@ public class PlayerController : MonoBehaviour
     private Color[] colors = { Color.red, Color.green, Color.blue, Color.magenta };
     private int currentColorIndex = 0;
 
-    public GameObject bulletPrefab; // Reference to the bullet prefab
-    public Transform bulletSpawnPoint; // Reference to the spawn point of the bullet
-    public float bulletSpeed = 2f; // Reduced speed of the bullet
-    public float shootInterval = 0.5f; // Time between shots
+    public GameObject bulletPrefab;
+    public Transform bulletSpawnPoint;
+    public float bulletSpeed = 2f;
+    public float shootInterval = 0.5f;
 
-    public float rotationSpeed = 2f; // Speed of rotation towards the enemy
+    public float rotationSpeed = 2f;
 
-    private float shootTimer = 0f; // Timer to control shooting
-    private HashSet<GameObject> enemiesInRange = new HashSet<GameObject>(); // Track enemies in range
-    private int enemiesDestroyed = 0; // Counter for enemies destroyed
+    private float shootTimer = 0f;
+    private HashSet<GameObject> enemiesInRange = new HashSet<GameObject>();
+    private int enemiesDestroyed = 0;
 
-    public TextMeshProUGUI enemiesDestroyedText; // Reference to TextMeshProUGUI element to display the count
+    public TextMeshProUGUI enemiesDestroyedText;
+    public GameObject endScreen;
 
     void Start()
     {
-        // Get the SpriteRenderer component
         spriteRenderer = GetComponent<SpriteRenderer>();
-        // Set the initial color
         spriteRenderer.color = colors[currentColorIndex];
         UpdateEnemiesDestroyedText();
+
+        if (endScreen != null)
+        {
+            endScreen.SetActive(false);
+        }
     }
 
     void Update()
     {
-        // Change color on left mouse click
         if (Input.GetMouseButtonDown(0))
         {
             ChangeColor();
         }
 
-        // Make the player slowly face the nearest enemy
         SmoothFaceNearestEnemy();
 
-        // Check if there are enemies in range and shoot periodically
         if (enemiesInRange.Count > 0)
         {
             shootTimer += Time.deltaTime;
@@ -55,30 +56,25 @@ public class PlayerController : MonoBehaviour
 
     private void ChangeColor()
     {
-        // Cycle through colors
         currentColorIndex = (currentColorIndex + 1) % colors.Length;
         spriteRenderer.color = colors[currentColorIndex];
     }
 
     public void ShootBullet()
     {
-        // Instantiate the bullet and set its color
         GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPoint.position, Quaternion.identity);
         bullet.GetComponent<SpriteRenderer>().color = spriteRenderer.color;
         bullet.GetComponent<Rigidbody2D>().velocity = transform.up * bulletSpeed;
-
-        // Set bullet to destroy after a certain amount of time to avoid memory leaks
-        Destroy(bullet, 5f); // Destroy bullet after 5 seconds if it does not hit anything
+        Destroy(bullet, 5f);
     }
 
     private void SmoothFaceNearestEnemy()
     {
-        // Find the nearest enemy from all enemies in the scene
         GameObject nearestEnemy = null;
         float closestDistanceSqr = Mathf.Infinity;
         Vector3 currentPosition = transform.position;
 
-        GameObject[] allEnemies = GameObject.FindGameObjectsWithTag("Enemy"); // Find all enemies in the scene
+        GameObject[] allEnemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject enemy in allEnemies)
         {
             Vector3 directionToTarget = enemy.transform.position - currentPosition;
@@ -90,7 +86,6 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // Smoothly rotate the player to face the nearest enemy
         if (nearestEnemy != null)
         {
             Vector3 direction = nearestEnemy.transform.position - transform.position;
@@ -100,23 +95,29 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+      
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            Debug.Log("Player hit by an enemy!");
+            ShowEndScreen();
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Check if an enemy enters the detection radius
         if (collision.CompareTag("Enemy"))
         {
             enemiesInRange.Add(collision.gameObject);
-            Debug.Log("Enemy entered detection radius: " + collision.gameObject.name); // Log when an enemy enters
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        // Remove enemy from the list when it exits the detection radius
         if (collision.CompareTag("Enemy"))
         {
             enemiesInRange.Remove(collision.gameObject);
-            Debug.Log("Enemy exited detection radius: " + collision.gameObject.name); // Log when an enemy exits
         }
     }
 
@@ -131,6 +132,20 @@ public class PlayerController : MonoBehaviour
         if (enemiesDestroyedText != null)
         {
             enemiesDestroyedText.text = "Enemies Destroyed: " + enemiesDestroyed;
+        }
+    }
+
+    private void ShowEndScreen()
+    {
+        Debug.Log("Game Over! Showing end screen."); 
+        Time.timeScale = 0f;
+        if (endScreen != null)
+        {
+            endScreen.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("End screen object is not assigned in the Inspector.");
         }
     }
 }
